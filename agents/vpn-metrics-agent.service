@@ -1,0 +1,18 @@
+[Unit]
+Description=MiraiVPN Metrics Agent
+After=network.target wg-quick@wg0.service
+Requires=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/vpn-metrics-agent.sh
+Restart=always
+RestartSec=5
+Environment=WG_IF=wg0
+Environment=PORT=8787
+Environment=AGENT_TOKEN=changeme
+EnvironmentFile=-/etc/miraivpn/agent.env
+
+[Install]
+WantedBy=multi-user.target

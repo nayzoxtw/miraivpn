@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  username          String   @unique
+  email             String   @unique
+  password_hash     String
+  language          String   @default("fr")
+  twofa_secret      String?
+  balance_credits   Float    @default(0)
+  sponsor_id        String?
+  email_verified    Boolean  @default(false)
+  email_token       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  subscriptions     Subscription[]
+  logs              Log[]
+  sponsorships      Sponsorship[] @relation("Sponsor")
+  referred_by       Sponsorship[] @relation("Referred")
+  reports           Report[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  user_id       String
+  plan          String   // 'basic' | 'premium' | 'vip'
+  status        String   // 'active' | 'canceled' | 'past_due'
+  region        String?
+  vps_id        String?
+  wireguard_conf String?
+  quota_gb      Float    @default(0)
+  used_gb       Float    @default(0)
+  start_date    DateTime
+  end_date      DateTime?
+  stripe_id     String   @unique
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  vps  VpsServer? @relation(fields: [vps_id], references: [id], onDelete: SetNull)
+
+  @@map("subscriptions")
+}
+
+model VpsServer {
+  id           String   @id @default(cuid())
+  name         String
+  ip           String
+  region       String
+  active_users Int      @default(0)
+  max_users    Int      @default(100)
+  cpu_load     Float    @default(0)
+  bw_mbps      Float    @default(100)
+  status       String   @default("online")
+  last_ping    DateTime @default(now())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  subscriptions Subscription[]
+  reports       Report[]
+
+  @@map("vps_servers")
+}
+
+model Log {
+  id         String   @id @default(cuid())
+  user_id    String?
+  type       String   // 'auth', 'payment', 'vpn', 'error'
+  message    String
+  created_at DateTime @default(now())
+
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@map("logs")
+}
+
+model Sponsorship {
+  id                String  @id @default(cuid())
+  sponsor_user_id   String
+  referred_user_id  String
+  reward_eur        Float   @default(1)
+  paid              Boolean @default(false)
+  created_at        DateTime @default(now())
+
+  sponsor User @relation("Sponsor", fields: [sponsor_user_id], references: [id], onDelete: Cascade)
+  referred User @relation("Referred", fields: [referred_user_id], references: [id], onDelete: Cascade)
+
+  @@unique([sponsor_user_id, referred_user_id])
+  @@map("sponsorships")
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  vps_id     String?
+  user_id    String
+  reason     String
+  log_ref    String?
+  created_at DateTime @default(now())
+
+  vps   VpsServer? @relation(fields: [vps_id], references: [id], onDelete: SetNull)
+  user  User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+

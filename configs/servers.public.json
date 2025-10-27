@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "updatedAt": "2025-10-26T12:00:00Z",
+  "servers": [
+    {
+      "id": "jp-osa-1",
+      "label": "Osaka #1",
+      "country": "JP",
+      "region": "Kansai",
+      "capacity": 50,
+      "features": ["wireguard"],
+      "publicLoad": {
+        "users": 0,
+        "bandwidthMbps": 0,
+        "pingMs": null,
+        "status": "unknown"
+      }
+    },
+    {
+      "id": "us-nyc-1",
+      "label": "New York #1",
+      "country": "US",
+      "region": "East Coast",
+      "capacity": 100,
+      "features": ["wireguard"],
+      "publicLoad": {
+        "users": 0,
+        "bandwidthMbps": 0,
+        "pingMs": null,
+        "status": "unknown"
+      }
+    }
+  ]
+}
